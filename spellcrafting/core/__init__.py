@@ -5,6 +5,7 @@ Módulo central com as interfaces e classes base do sistema de crafting.
 
 # Importações principais para facilitar o acesso
 from spellcrafting.core.interfaces import (
+    MagicalElement,
     MagicalComponentInterface,
     MagicalEffectInterface,
     SpellInterface,
@@ -13,9 +14,14 @@ from spellcrafting.core.interfaces import (
     ElementDominanceCalculatorInterface,
     ScalingCalculatorInterface,
     CombinationRuleInterface,
-    CraftingSystemInterface,  # Adicionando a interface que faltava
-    ObserverInterface,        # Outras interfaces importantes
-    SubjectInterface          # Outras interfaces importantes
+    CraftingSystemInterface,
+    ObserverInterface,
+    SubjectInterface,
+    # Adicionando interfaces de fábrica
+    ComponentFactoryInterface,
+    EffectFactoryInterface,
+    SpellFactoryInterface,
+    AIModelInterface
 )
 from spellcrafting.core.component import MagicalComponent
 from spellcrafting.core.effect import MagicalEffect
@@ -23,6 +29,7 @@ from spellcrafting.core.spell import Spell
 
 # Define as classes que serão exportadas com `from spellcrafting.core import *`
 __all__ = [
+    'MagicalElement',
     'MagicalComponentInterface',
     'MagicalEffectInterface',
     'SpellInterface',
@@ -31,10 +38,15 @@ __all__ = [
     'ElementDominanceCalculatorInterface',
     'ScalingCalculatorInterface',
     'CombinationRuleInterface',
-    'CraftingSystemInterface',  # Adicionado à lista de exportações
-    'ObserverInterface',        # Adicionado à lista de exportações
-    'SubjectInterface',         # Adicionado à lista de exportações
+    'CraftingSystemInterface',
+    'ObserverInterface',
+    'SubjectInterface',
+    # Adicionando interfaces de fábrica ao __all__
+    'ComponentFactoryInterface',
+    'EffectFactoryInterface',
+    'SpellFactoryInterface',
     'MagicalComponent',
     'MagicalEffect',
-    'Spell'
+    'Spell',
+    'AIModelInterface'
 ]

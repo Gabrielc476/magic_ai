@@ -3,7 +3,7 @@
 Gerenciador de receitas para o sistema de crafting de magia.
 Implementa o padrão Repository para armazenar e gerenciar receitas de magia.
 """
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional, Set, Tuple
 from collections import defaultdict
 
 from spellcrafting.utils.observers import Subject
@@ -36,6 +36,10 @@ class RecipeManager(Subject):
         """
         if recipe_name in self._recipes:
             raise ValueError(f"Receita '{recipe_name}' já existe")
+
+        # Verifica se existem pelo menos 3 componentes
+        if len(component_names) < 3:
+            raise ValueError("Uma receita de magia precisa de pelo menos 3 componentes")
 
         # Registra a receita
         self._recipes[recipe_name] = {
@@ -122,6 +126,27 @@ class RecipeManager(Subject):
                     matching_recipes.append(recipe)
 
         return matching_recipes
+
+    def find_matching_recipe(self, component_names: List[str]) -> Optional[Tuple[str, str]]:
+        """
+        Encontra uma receita correspondente aos componentes fornecidos.
+
+        Args:
+            component_names: Lista de nomes de componentes
+
+        Returns:
+            Tupla (nome da receita, nome do efeito) ou None se não encontrar
+        """
+        # Obtém todas as receitas que podem ser criadas com esses componentes
+        matching_recipes = self.find_recipes_by_components(component_names)
+
+        if not matching_recipes:
+            return None
+
+        # Se encontrar múltiplas receitas, escolhe a que usa mais componentes (mais específica)
+        best_match = max(matching_recipes, key=lambda r: len(set(r["components"])))
+
+        return best_match["name"], best_match["effect"]
 
     def get_all_recipes(self) -> List[Dict[str, Any]]:
         """
