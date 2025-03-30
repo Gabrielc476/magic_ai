@@ -2,9 +2,8 @@
 """
 Conversores para transformar componentes e efeitos em vetores numéricos.
 """
-from typing import List, Dict, Any
-import numpy as np
-from ..core.interfaces import MagicalComponentInterface, MagicalEffectInterface
+from typing import List, Dict
+from spellcrafting.core import MagicalComponentInterface, MagicalEffectInterface
 
 
 class VectorConverter:

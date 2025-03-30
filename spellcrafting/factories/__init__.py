@@ -2,9 +2,9 @@
 """
 Implementações de fábricas para criação de componentes, efeitos e magias.
 """
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
-from ..core.interfaces import (
+from spellcrafting.core import (
     ComponentFactoryInterface,
     EffectFactoryInterface,
     SpellFactoryInterface,
@@ -16,9 +16,9 @@ from ..core.interfaces import (
     ElementDominanceCalculatorInterface,
     ScalingCalculatorInterface
 )
-from ..core.component import MagicalComponent
-from ..core.effect import MagicalEffect
-from ..core.spell import Spell
+from spellcrafting.core import MagicalComponent
+from spellcrafting.core import MagicalEffect
+from spellcrafting.core import Spell
 
 
 class ComponentFactory(ComponentFactoryInterface):

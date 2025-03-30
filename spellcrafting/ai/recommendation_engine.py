@@ -2,13 +2,13 @@
 """
 Sistema de recomendação para componentes de magia.
 """
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Optional
 from collections import Counter
 import numpy as np
 
-from ..core.interfaces import MagicalComponentInterface, AIModelInterface
+from spellcrafting.core import MagicalComponentInterface, AIModelInterface
 from .vector_converter import VectorConverter
-from ..system.crafting_system import CraftingSystem
+from spellcrafting.system.crafting_system import CraftingSystem
 
 
 class ComponentRecommendationEngine(AIModelInterface):

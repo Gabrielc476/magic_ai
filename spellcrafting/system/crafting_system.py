@@ -1,12 +1,11 @@
 # spellcrafting/system/crafting_system.py
 """
-Sistema principal de crafting de magias.
+Sistema principal de crafting de magias, atualizado para eliminar duplicação.
 """
-from typing import List, Dict, Any, Optional, Tuple, Set
-import random
+from typing import List, Dict, Any, Optional, Tuple
 from collections import Counter
 
-from ..core.interfaces import (
+from spellcrafting.core import (
     CraftingSystemInterface,
     MagicalComponentInterface,
     MagicalEffectInterface,
@@ -15,16 +14,19 @@ from ..core.interfaces import (
     PowerCalculatorInterface,
     LevelCalculatorInterface,
     ElementDominanceCalculatorInterface,
-    ScalingCalculatorInterface
+    ScalingCalculatorInterface,
+    ObserverInterface
 )
-from ..core.effect import MagicalEffect
-from ..utils.observers import Subject
+from spellcrafting.core import MagicalEffect
+from spellcrafting.utils.observers import Subject
+from ..system.element_manager import ElementManager
+from ..system.recipe_manager import RecipeManager
 
 
-class CraftingSystem(CraftingSystemInterface, Subject):
+class CraftingSystem(CraftingSystemInterface, Subject, ObserverInterface):
     """
     Sistema de crafting que gerencia componentes, efeitos, receitas
-    e criação de magias.
+    e criação de magias. Integrado com ElementManager e RecipeManager.
     """
 
     def __init__(
@@ -32,7 +34,9 @@ class CraftingSystem(CraftingSystemInterface, Subject):
             power_calculator: Optional[PowerCalculatorInterface] = None,
             level_calculator: Optional[LevelCalculatorInterface] = None,
             element_calculator: Optional[ElementDominanceCalculatorInterface] = None,
-            scaling_calculator: Optional[ScalingCalculatorInterface] = None
+            scaling_calculator: Optional[ScalingCalculatorInterface] = None,
+            recipe_manager: Optional[RecipeManager] = None,
+            element_manager: Optional[ElementManager] = None
     ):
         """
         Inicializa o sistema de crafting.
@@ -42,6 +46,8 @@ class CraftingSystem(CraftingSystemInterface, Subject):
             level_calculator: Calculadora de nível das magias
             element_calculator: Calculadora de elemento dominante
             scaling_calculator: Calculadora de escalonamento
+            recipe_manager: Gerenciador de receitas
+            element_manager: Gerenciador de elementos
         """
         # Inicializa a classe base Subject para o padrão Observer
         Subject.__init__(self)
@@ -49,9 +55,15 @@ class CraftingSystem(CraftingSystemInterface, Subject):
         # Armazéns de dados
         self._registered_components: Dict[str, MagicalComponentInterface] = {}
         self._registered_effects: Dict[str, MagicalEffectInterface] = {}
-        self._spell_recipes: Dict[str, Dict[str, Any]] = {}
         self._combination_rules: List[CombinationRuleInterface] = []
         self._spell_history: List[Tuple[List[MagicalComponentInterface], MagicalEffectInterface]] = []
+
+        # Gerenciadores
+        self._recipe_manager = recipe_manager or RecipeManager()
+        self._element_manager = element_manager or ElementManager()
+
+        # Registra este sistema como observador do gerenciador de receitas
+        self._recipe_manager.attach(self)
 
         # Calculadoras de estratégia
         self._power_calculator = power_calculator
@@ -68,11 +80,6 @@ class CraftingSystem(CraftingSystemInterface, Subject):
     def registered_effects(self) -> Dict[str, MagicalEffectInterface]:
         """Retorna um dicionário com os efeitos registrados."""
         return self._registered_effects.copy()
-
-    @property
-    def spell_recipes(self) -> Dict[str, Dict[str, Any]]:
-        """Retorna um dicionário com as receitas de magias."""
-        return self._spell_recipes.copy()
 
     @property
     def spell_history(self) -> List[Tuple[List[MagicalComponentInterface], MagicalEffectInterface]]:
@@ -101,20 +108,13 @@ class CraftingSystem(CraftingSystemInterface, Subject):
 
     def register_recipe(self, recipe_name: str, component_names: List[str], effect_name: str) -> None:
         """
-        Registra uma receita de magia.
+        Registra uma receita de magia, delegando ao RecipeManager.
 
         Args:
             recipe_name: Nome da receita
             component_names: Lista de nomes de componentes necessários
             effect_name: Nome do efeito produzido
-
-        Raises:
-            ValueError: Se faltar algum componente ou efeito, ou número insuficiente de componentes
         """
-        # Verifica se existem pelo menos 3 componentes
-        if len(component_names) < 3:
-            raise ValueError("Uma receita de magia precisa de pelo menos 3 componentes")
-
         # Verifica se os componentes estão registrados
         for name in component_names:
             if name not in self._registered_components:
@@ -124,17 +124,8 @@ class CraftingSystem(CraftingSystemInterface, Subject):
         if effect_name not in self._registered_effects:
             raise ValueError(f"Efeito '{effect_name}' não está registrado")
 
-        # Registra a receita
-        self._spell_recipes[recipe_name] = {
-            "components": component_names,
-            "effect": effect_name
-        }
-
-        self.notify("recipe_registered", {
-            "name": recipe_name,
-            "components": component_names,
-            "effect": effect_name
-        })
+        # Delega ao gerenciador de receitas
+        self._recipe_manager.register_recipe(recipe_name, component_names, effect_name)
 
     def add_combination_rule(self, rule: CombinationRuleInterface) -> None:
         """
@@ -176,15 +167,12 @@ class CraftingSystem(CraftingSystemInterface, Subject):
         primary_effect = None
         secondary_effects = []
 
-        for recipe_name, recipe in self._spell_recipes.items():
-            # Verifica se todos os componentes da receita estão presentes
-            recipe_components = set(recipe["components"])
-            provided_components = set(component_names)
-
-            if recipe_components.issubset(provided_components):
-                primary_effect = self._registered_effects[recipe["effect"]]
-                self.notify("recipe_matched", recipe_name)
-                break
+        # Usa o RecipeManager para encontrar uma receita correspondente
+        recipe_match = self._recipe_manager.find_matching_recipe(component_names)
+        if recipe_match:
+            recipe_name, effect_name = recipe_match
+            primary_effect = self._registered_effects[effect_name]
+            self.notify("recipe_matched", recipe_name)
 
         # Se não corresponder a uma receita, aplica as regras de combinação
         if not primary_effect:
@@ -219,7 +207,7 @@ class CraftingSystem(CraftingSystemInterface, Subject):
             self.notify("generic_effect_created", primary_effect)
 
         # Importamos aqui para evitar importação circular
-        from ..core.spell import Spell
+        from spellcrafting.core import Spell
 
         # Cria a magia usando as calculadoras específicas
         spell = Spell(
@@ -291,7 +279,7 @@ class CraftingSystem(CraftingSystemInterface, Subject):
 
     def get_compatible_elements(self, element: str) -> List[str]:
         """
-        Retorna elementos compatíveis com o elemento dado.
+        Retorna elementos compatíveis com o elemento dado, utilizando o ElementManager.
 
         Args:
             element: Nome do elemento
@@ -299,12 +287,17 @@ class CraftingSystem(CraftingSystemInterface, Subject):
         Returns:
             Lista de elementos compatíveis
         """
-        compatibilities = {
-            "fogo": ["ar"],
-            "água": ["ar", "terra"],
-            "terra": ["água"],
-            "ar": ["fogo", "água"],
-            "luz": ["ar", "fogo"],
-            "trevas": ["terra", "água"]
-        }
-        return compatibilities.get(element, [])
+        return self._element_manager.get_compatible_elements(element)
+
+    # Implementação da interface ObserverInterface
+    def update(self, event_type: str, data: Any) -> None:
+        """
+        Recebe atualizações de outros componentes do sistema.
+
+        Args:
+            event_type: Tipo do evento
+            data: Dados do evento
+        """
+        # Propaga as notificações recebidas do RecipeManager para os próprios observadores
+        if event_type.startswith("recipe_"):
+            self.notify(event_type, data)

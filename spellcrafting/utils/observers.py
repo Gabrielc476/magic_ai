@@ -3,7 +3,7 @@
 Implementação de observadores para eventos do sistema.
 """
 from typing import Any, List, Dict
-from ..core.interfaces import ObserverInterface, SubjectInterface
+from spellcrafting.core import ObserverInterface, SubjectInterface
 
 
 class Subject(SubjectInterface):

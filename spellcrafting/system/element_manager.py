@@ -1,11 +1,12 @@
 # spellcrafting/system/element_manager.py
 """
 Gerenciador de elementos mágicos e suas interações.
+Versão melhorada com melhor integração ao sistema.
 """
-from typing import List, Dict, Any, Optional, Set, Tuple
-from ..core.interfaces import MagicalElement, SubjectInterface
-from ..utils.observers import Subject
-from ..utils.enums import ElementType, ElementInteraction
+from typing import List, Dict, Any, Optional, Tuple
+from spellcrafting.core import MagicalElement
+from spellcrafting.utils.observers import Subject
+from spellcrafting.utils.enums import ElementType, ElementInteraction
 
 
 class Element(MagicalElement):
@@ -222,6 +223,18 @@ class ElementManager(Subject):
         """
         return self._elements.get(name)
 
+    def get_element_by_type(self, element_type: ElementType) -> Optional[Element]:
+        """
+        Obtém um elemento pelo tipo enumerado.
+
+        Args:
+            element_type: Tipo de elemento (enumeração)
+
+        Returns:
+            O elemento, ou None se não encontrado
+        """
+        return self._elements.get(element_type.value)
+
     def get_all_elements(self) -> List[Element]:
         """
         Obtém todos os elementos registrados.
@@ -290,6 +303,25 @@ class ElementManager(Subject):
                 rare.append((element1, element2))
         return rare
 
+    def get_opposing_elements(self, element_name: str) -> List[str]:
+        """
+        Obtém os elementos opostos a um determinado elemento.
+
+        Args:
+            element_name: Nome do elemento
+
+        Returns:
+            Lista de elementos opostos
+        """
+        opposing = []
+        for (element1, element2), interaction in self._element_interactions.items():
+            if interaction == ElementInteraction.OPPOSITION:
+                if element_name == element1:
+                    opposing.append(element2)
+                elif element_name == element2:
+                    opposing.append(element1)
+        return opposing
+
     def calculate_elemental_bonus(self, elements: List[str]) -> float:
         """
         Calcula o bônus baseado nas interações entre múltiplos elementos.
@@ -349,3 +381,31 @@ class ElementManager(Subject):
 
         # Evita multiplicadores muito baixos
         return max(0.5, multiplier)
+
+    def get_element_description(self, element_name: str) -> str:
+        """
+        Obtém uma descrição detalhada de um elemento.
+
+        Args:
+            element_name: Nome do elemento
+
+        Returns:
+            Descrição detalhada do elemento
+        """
+        element = self.get_element(element_name)
+        if not element:
+            return f"Elemento desconhecido: {element_name}"
+
+        compatible = ", ".join(element.compatible_elements)
+        opposing = element.properties.get("opposing", "nenhum")
+
+        description = (
+            f"Elemento: {element.name.capitalize()}\n"
+            f"Descrição: {element.properties.get('description', 'Sem descrição')}\n"
+            f"Elementos compatíveis: {compatible}\n"
+            f"Elemento oposto: {opposing.capitalize()}\n"
+            f"Efeito primário: {element.properties.get('primary_effect', 'desconhecido')}\n"
+            f"Efeito secundário: {element.properties.get('secondary_effect', 'desconhecido')}"
+        )
+
+        return description

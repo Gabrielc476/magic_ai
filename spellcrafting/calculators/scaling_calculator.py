@@ -2,9 +2,9 @@
 """
 Implementação de calculadoras de escalonamento de magia.
 """
-from typing import List, Dict, Any, Optional
-from ..core.interfaces import ScalingCalculatorInterface, SpellInterface
-from ..utils.constants import ELEMENT_SCALING_EFFECTS
+from typing import Dict, Any
+from spellcrafting.core import ScalingCalculatorInterface, SpellInterface
+from spellcrafting.utils.constants import ELEMENT_SCALING_EFFECTS
 
 
 class DefaultScalingCalculator(ScalingCalculatorInterface):

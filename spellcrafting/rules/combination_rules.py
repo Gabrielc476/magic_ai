@@ -2,9 +2,9 @@
 """
 Implementação de regras de combinação para o sistema de crafting.
 """
-from typing import List, Optional, Dict, Any
-from ..core.interfaces import CombinationRuleInterface, MagicalComponentInterface, MagicalEffectInterface
-from ..core.effect import MagicalEffect
+from typing import List, Optional, Dict
+from spellcrafting.core import CombinationRuleInterface, MagicalComponentInterface, MagicalEffectInterface
+from spellcrafting.core import MagicalEffect
 
 
 class ElementalCombinationRule(CombinationRuleInterface):

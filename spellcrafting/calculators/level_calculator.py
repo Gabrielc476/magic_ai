@@ -2,8 +2,8 @@
 """
 Implementação de calculadoras de nível de magia.
 """
-from typing import List, Dict, Set, Tuple
-from ..core.interfaces import LevelCalculatorInterface, MagicalComponentInterface
+from typing import List
+from spellcrafting.core import LevelCalculatorInterface, MagicalComponentInterface
 
 
 class DefaultLevelCalculator(LevelCalculatorInterface):

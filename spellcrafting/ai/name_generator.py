@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import random
 from collections import Counter
 
-from ..core.interfaces import MagicalComponentInterface, MagicalEffectInterface, AIModelInterface
+from spellcrafting.core import MagicalComponentInterface, MagicalEffectInterface, AIModelInterface
 
 
 class SpellNameGenerator(AIModelInterface):

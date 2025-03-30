@@ -3,11 +3,10 @@
 Gerenciador de receitas para o sistema de crafting de magia.
 Implementa o padrão Repository para armazenar e gerenciar receitas de magia.
 """
-from typing import List, Dict, Any, Optional, Set, Tuple
+from typing import List, Dict, Any, Optional, Set
 from collections import defaultdict
 
-from ..core.interfaces import MagicalEffectInterface, SubjectInterface
-from ..utils.observers import Subject
+from spellcrafting.utils.observers import Subject
 
 
 class RecipeManager(Subject):

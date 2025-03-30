@@ -3,7 +3,7 @@
 Implementação de calculadoras de poder de magia.
 """
 from typing import List, Dict
-from ..core.interfaces import PowerCalculatorInterface, MagicalComponentInterface
+from spellcrafting.core import PowerCalculatorInterface, MagicalComponentInterface
 
 
 class DefaultPowerCalculator(PowerCalculatorInterface):

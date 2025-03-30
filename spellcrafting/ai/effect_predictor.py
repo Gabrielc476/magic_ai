@@ -2,14 +2,13 @@
 """
 Sistema de predição de efeitos de magia.
 """
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Optional, Tuple
 from collections import Counter
-import numpy as np
 
-from ..core.interfaces import MagicalComponentInterface, MagicalEffectInterface, AIModelInterface
-from ..core.effect import MagicalEffect
+from spellcrafting.core import MagicalComponentInterface, MagicalEffectInterface, AIModelInterface
+from spellcrafting.core import MagicalEffect
 from .vector_converter import VectorConverter
-from ..system.crafting_system import CraftingSystem
+from spellcrafting.system.crafting_system import CraftingSystem
 
 
 class EffectPredictor(AIModelInterface):
